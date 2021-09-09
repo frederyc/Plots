@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "935140029116",
+    "project_id": "plots-b5ee2",
+    "storage_bucket": "plots-b5ee2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935140029116:android:f1094285ff17b04f2816b9",
+        "android_client_info": {
+          "package_name": "com.example.plots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "935140029116-r8pqgc0fih37kodcmkothm81au7iff62.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4GVJJRQkuemI3R1rCld9wdHzrZdz2vJM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935140029116-r8pqgc0fih37kodcmkothm81au7iff62.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
