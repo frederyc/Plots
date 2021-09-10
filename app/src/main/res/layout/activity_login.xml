@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/background_white"
-    tools:context=".LoginActivity">
+    tools:context=".ui.login.LoginActivity">
 
 
     <ImageView
@@ -172,8 +172,8 @@
 
         <ImageView
             android:id="@+id/facebookSignIn"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginStart="24dp"
             android:src="@drawable/facebook_icon_153518"
             app:tint="@color/facebook" />
