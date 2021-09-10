@@ -6,8 +6,9 @@ import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.Observer
+import com.example.plots.R
 import com.example.plots.databinding.ActivityRegisterBinding
+import com.example.plots.dialogs.LoadingScreen
 import com.example.plots.utils.AuthenticationInjector
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -40,44 +41,57 @@ class RegisterActivity : AppCompatActivity() {
 
         binding.signUp.setOnClickListener {
             if(checkUserDataForUpload()) {
-                viewModel.createUserWithEmail(binding.email.text.toString(),
+                val loadingScreen = LoadingScreen(this, R.layout.register_loading_screen)
+                loadingScreen.start()
+
+                viewModel.createUserWithEmail(
+                    binding.name.text.toString(),
+                    binding.phone.text.toString(),
+                    binding.email.text.toString(),
                     binding.password.text.toString())
-                viewModel.getCreateUserWithEmailResult().observe(this, Observer {
+
+                viewModel.getCreateUserWithEmailResult().observe(this, {
                     if(it) {
-                        Log.d(TAG, "User registered successfully")
-                        finish()
+                        viewModel.getCreateUserPersonalDataResult().observe(this, { p ->
+                            if(p) {
+                                Log.d(TAG, "User registered successfully")
+                                Toast.makeText(baseContext,
+                                    "Registration successful!", Toast.LENGTH_LONG).show()
+                                loadingScreen.end()
+                                finish()
+                            }
+                            else {
+                                Log.w(TAG, "User failed to register (personal data")
+                                Toast.makeText(baseContext,
+                                    "User failed to register", Toast.LENGTH_SHORT).show()
+                                loadingScreen.end()
+                            }
+                        })
                     }
                     else {
                         Log.w(TAG, "User failed to register")
-                        Toast.makeText(baseContext, "User failed to register", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(baseContext,
+                            "User failed to register", Toast.LENGTH_SHORT).show()
+                        loadingScreen.end()
                     }
                 })
+
             }
         }
+
     }
 
-//    private fun createUserWithEmailAndPassword() {
-//        auth.createUserWithEmailAndPassword(
-//            binding.email.text.toString(), binding.password.text.toString())
-//            .addOnCompleteListener(this) { task ->
-//                if (task.isSuccessful) {
-//                    // Sign in success, update UI with the signed-in user's information
-//                    val user = auth.currentUser
-//                    Toast.makeText(this,
-//                        "Account created successfully",
-//                        Toast.LENGTH_SHORT).show()
-//                    Log.d(TAG, "Account created successfully")
-//                    finish()
-//                } else {
-//                    // If sign in fails, display a message to the user.
-//                    Log.w(TAG, "createUserWithEmail: failure", task.exception)
-//                    Toast.makeText(baseContext, "Sign Up failed.",
-//                        Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//    }
-
     private fun checkUserDataForUpload(): Boolean {
+        if(binding.name.text.toString().isEmpty()) {
+            binding.name.error = "Please enter your name"
+            binding.name.requestFocus()
+            return false
+        }
+        if(binding.phone.text.toString().isEmpty()) {
+            binding.phone.error = "Please enter your phone number"
+            binding.phone.requestFocus()
+            return false
+        }
         if(binding.email.text.toString().isEmpty()) {
             binding.email.error = "Please enter email"
             binding.email.requestFocus()
