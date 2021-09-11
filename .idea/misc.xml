@@ -12,7 +12,11 @@
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_register.xml" value="0.23783783783783785" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_splash_screen.xml" value="0.25" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/google_login_error.xml" value="0.23783783783783785" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/google_login_loading_screen.xml" value="0.23783783783783785" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/login_error.xml" value="0.23783783783783785" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/login_loading_screen.xml" value="0.23783783783783785" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/register_error.xml" value="0.23783783783783785" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/register_loading_screen.xml" value="0.2" />
       </map>
     </option>

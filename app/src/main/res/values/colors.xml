@@ -12,5 +12,6 @@
     <color name="facebook_blue">#517cc0</color>
     <color name="facebook">#1877f2</color>
     <color name="google_orange">#ff5b49</color>
+    <color name="google_yellow">#ffb805</color>
     <color name="background_white">#fbfbfb</color>
 </resources>
