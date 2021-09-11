@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_margin="32dp"
+    android:layout_width="match_parent"
+    android:background="@color/google_orange"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/google_fullname_logo"
+        android:layout_marginHorizontal="64dp"
+        android:layout_marginTop="16dp"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_marginTop="-4dp"
+        android:indeterminateTint="@color/google_yellow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logging in"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:layout_margin="16dp"
+        android:fontFamily="@font/sentic_text_bold"
+        android:textColor="@color/google_yellow"/>
+
+</LinearLayout>
