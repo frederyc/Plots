@@ -5,11 +5,12 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
+import android.util.Patterns
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.example.plots.R
+import com.example.plots.activities.MainActivity
 import com.example.plots.ui.register.RegisterActivity
 import com.example.plots.databinding.ActivityLoginBinding
 import com.example.plots.dialogs.ErrorDialog
@@ -27,11 +28,6 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInActivityLauncher: ActivityResultLauncher<Intent>
-
-    // Loading screen declared as class variable because it needs to be launched in the main thread
-    // and get the response after signInGoogleContract, which runs on another thread
-    // It is started when googleSignIn is pressed and ended when the sign in end with a response
-    //private val loadingScreenTest = LoadingScreen(this, R.layout.google_login_loading_screen)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,8 +48,7 @@ class LoginActivity : AppCompatActivity() {
                         Log.w(TAG, "Google sign in failed", e)
                     }
                 }
-                // loadingScreenTest.end()
-        }
+            }
 
         initUI()
     }
@@ -68,23 +63,26 @@ class LoginActivity : AppCompatActivity() {
             })
 
         binding.login.setOnClickListener {
-            val loadingScreen = LoadingScreen(this, R.layout.login_loading_screen)
-                .also { it.start() }
-            viewModel.signInWithEmail(
-                binding.email.text.toString(),
-                binding.password.text.toString()
-            )
-            viewModel.getSignInUserWithEmailResult().observe(this, {
-                if (it) {
-                    Log.d(TAG, "User signed in successfully")
-                    loadingScreen.end()
-                    finish()
-                } else {
-                    Log.w(TAG, "User failed to login")
-                    loadingScreen.end()
-                    ErrorDialog(this, R.layout.login_error).start()
-                }
-            })
+            if(checkLoginDataForSignIn()) {
+                val loadingScreen = LoadingScreen(this, R.layout.login_loading_screen)
+                    .also { it.start() }
+                viewModel.signInWithEmail(
+                    binding.email.text.toString(),
+                    binding.password.text.toString()
+                )
+                viewModel.getSignInUserWithEmailResult().observe(this, {
+                    if (it) {
+                        Log.d(TAG, "User signed in successfully")
+                        loadingScreen.end()
+                        finish()
+                        startActivity(Intent(this, MainActivity::class.java))
+                    } else {
+                        Log.w(TAG, "User failed to login")
+                        loadingScreen.end()
+                        ErrorDialog(this, R.layout.login_error).start()
+                    }
+                })
+            }
         }
 
         binding.signUp.setOnClickListener {
@@ -100,6 +98,8 @@ class LoginActivity : AppCompatActivity() {
                 if(it) {
                     Log.d(TAG, "Sign in with google: success")
                     loadingScreen.end()
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
                 }
                 else {
                     Log.d(TAG, "Sign in with google: failed")
@@ -110,6 +110,25 @@ class LoginActivity : AppCompatActivity() {
             Log.d(TAG,"googleSignIn: ended")
         }
 
+    }
+
+    private fun checkLoginDataForSignIn(): Boolean {
+        if(binding.email.text.toString().isEmpty()) {
+            binding.email.error = "Please enter email"
+            binding.email.requestFocus()
+            return false
+        }
+        if(!Patterns.EMAIL_ADDRESS.matcher(binding.email.text.toString()).matches()) {
+            binding.email.error = "Please enter a valid email address"
+            binding.email.requestFocus()
+            return false
+        }
+        if(binding.password.text.toString().isEmpty()) {
+            binding.password.error = "Please enter a password"
+            binding.password.requestFocus()
+            return false
+        }
+        return true
     }
 
 }
