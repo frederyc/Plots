@@ -14,4 +14,5 @@
     <color name="google_orange">#ff5b49</color>
     <color name="google_yellow">#ffb805</color>
     <color name="background_white">#fbfbfb</color>
+    <color name="toolbar_color">#020c18</color>
 </resources>

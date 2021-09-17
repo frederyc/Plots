@@ -55,6 +55,7 @@ class RegisterActivity : AppCompatActivity() {
                     if(it) {
                         viewModel.getCreateUserPersonalDataResult().observe(this, { p ->
                             if(p) {
+                                auth.signOut()
                                 Log.d(TAG, "User registered successfully")
                                 Toast.makeText(baseContext,
                                     "Registration successful!", Toast.LENGTH_LONG).show()

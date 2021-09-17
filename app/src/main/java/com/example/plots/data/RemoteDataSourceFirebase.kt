@@ -2,8 +2,10 @@ package com.example.plots.data
 
 import android.app.Activity
 import android.util.Log
+import android.widget.ImageView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -72,7 +74,6 @@ class RemoteDataSourceFirebase {
                 Log.w(TAG, "createUserWithEmail: failure: $it")
                 createUserResult.value = false
             }
-
     }
 
     fun signInWithEmail(email: String, password: String) {
@@ -88,6 +89,67 @@ class RemoteDataSourceFirebase {
                 }
             }
     }
+
+    fun getUserEmail(): LiveData<String> = MutableLiveData(auth.currentUser?.email)
+
+    fun getUserName(): LiveData<String> = MutableLiveData<String>().apply {
+        db.collection("Accounts")
+            .whereEqualTo("email", auth.currentUser?.email).get()
+            .addOnSuccessListener { it ->
+                if(it.documents[0].data?.get("email") == auth.currentUser?.email)
+                    this.value = it.documents[0].data?.get("name").let { name ->
+                        if(name != null) name as String else "No name found"
+                    }
+                else
+                    Log.w(TAG, "No Firestore data related to account found")
+            }.addOnFailureListener {
+                Log.w(TAG, "Failed to retrieve Firestore data for account: $it")
+            }
+    }
+
+    fun getUserPhone(): LiveData<String> = MutableLiveData<String>().apply {
+        db.collection("Accounts")
+            .whereEqualTo("email", auth.currentUser?.email).get()
+            .addOnSuccessListener {
+                //todo remove double checking
+                if(it.documents[0].data?.get("email") == auth.currentUser?.email)
+                    this.value = it.documents[0].data?.get("phone").let { phone ->
+                        if(phone != null) phone as String else "No phone number found"
+                    }
+                else
+                    Log.w(TAG, "No Firestore data related to account found")
+            }.addOnFailureListener {
+                Log.w(TAG, "Failed to retrieve Firestore data for account: $it")
+            }
+    }
+
+    //todo This is crap, change it
+    fun loadProfileImage(activity: Activity, imageHolder: ImageView) {
+        db.collection("Accounts")
+            .whereEqualTo("email", auth.currentUser?.email).get()
+            .addOnSuccessListener {
+                when(it.size()) {
+                    0 -> Log.w(TAG, "No account related to this email found")
+                    1 -> {
+                        when(it.documents[0].data?.get("signInType") as String) {
+                            "Google" -> {
+                                Log.d(TAG, "SignInType: Google")
+                                Glide.with(activity).load(auth.currentUser?.photoUrl).into(imageHolder)
+                            }
+                            "Email" -> {
+                                Log.d(TAG, "SignInType: Email")
+                            }
+                            else -> Log.w(TAG, "No sign in type detected")
+                        }
+                    }
+                    else -> Log.w(TAG, "Multiple accounts related to this email found")
+                }
+            }.addOnFailureListener {
+                Log.w(TAG, "Querying accounts for loading profile image failed: $it")
+            }
+    }
+
+    fun signOutUser() = auth.signOut()
 
     fun getCreateUserWithEmailResult(): LiveData<Boolean> = createUserResult
 
