@@ -4,8 +4,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import androidx.activity.OnBackPressedDispatcher
 import androidx.fragment.app.Fragment
 import com.example.plots.R
 import com.example.plots.databinding.ActivityMainBinding
@@ -14,10 +12,8 @@ import com.example.plots.ui.fragments.favorites.FavoritesFragment
 import com.example.plots.ui.fragments.feed.FeedFragment
 import com.example.plots.ui.fragments.settings.SettingsFragment
 import com.example.plots.ui.login.LoginActivity
-import com.example.plots.ui.register.RegisterActivity
 import com.google.firebase.auth.FirebaseAuth
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * TODO: When back is pressed, the fragment changes
