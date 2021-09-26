@@ -1,6 +1,7 @@
 package com.example.plots.data
 
 import android.app.Activity
+import android.app.TaskInfo
 import android.util.Log
 import android.widget.ImageView
 import androidx.lifecycle.LiveData
@@ -30,16 +31,29 @@ class RemoteDataSourceFirebase {
             .addOnSuccessListener {
                 Log.d(TAG, "signInWithGoogle: success")
                 authUserWithGoogleResult.value = true
+
                 db.collection("Accounts")
-                    .add(Account("Google", auth.currentUser?.displayName,
-                        auth.currentUser?.phoneNumber, auth.currentUser?.email))
-                    .addOnSuccessListener {
-                        Log.d(TAG, "createUserWithGoogle (account data): success")
-                        createUserPersonalData.value = true
+                    .whereEqualTo("signInType", "Google")
+                    .whereEqualTo("email", auth.currentUser?.email)
+                    .get().addOnSuccessListener {
+                        if(it.documents.size == 0)
+                            db.collection("Accounts")
+                                .add(Account("Google", auth.currentUser?.displayName,
+                                    auth.currentUser?.phoneNumber, auth.currentUser?.email))
+                                .addOnSuccessListener {
+                                    Log.d(TAG, "createUserWithGoogle (account data): success")
+                                    createUserPersonalData.value = true
+                                }.addOnFailureListener {
+                                    Log.w(TAG, "createUserWithGoogle (account data): failure: $it")
+                                    createUserPersonalData.value = false
+                                }
+                        else
+                            Log.d(TAG, "User ${auth.currentUser?.email} already has a Google " +
+                                    "account, signing them in")
                     }.addOnFailureListener {
-                        Log.w(TAG, "createUserWithGoogle (account data): failure: $it")
-                        createUserPersonalData.value = false
+                        Log.d(TAG, "Failed to fetch specific account from remote db: $it")
                     }
+
             }.addOnFailureListener {
                 Log.w(TAG, "signInWithGoogle: failure: $it")
                 authUserWithGoogleResult.value = false
@@ -95,7 +109,7 @@ class RemoteDataSourceFirebase {
     fun getUserName(): LiveData<String> = MutableLiveData<String>().apply {
         db.collection("Accounts")
             .whereEqualTo("email", auth.currentUser?.email).get()
-            .addOnSuccessListener { it ->
+            .addOnSuccessListener {
                 if(it.documents[0].data?.get("email") == auth.currentUser?.email)
                     this.value = it.documents[0].data?.get("name").let { name ->
                         if(name != null) name as String else "No name found"
