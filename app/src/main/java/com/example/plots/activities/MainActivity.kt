@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
 
         if(auth.currentUser == null) {
             Log.d(TAG, "User is not logged in")
-            startActivity(Intent(this, LoginActivity::class.java))
             finish()
+            startActivity(Intent(this, LoginActivity::class.java))
         }
         else
             Log.d(TAG, "User: ${auth.currentUser?.email}")

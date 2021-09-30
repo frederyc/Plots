@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -20,7 +21,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 
-
 class LoginActivity : AppCompatActivity() {
     private val TAG = "LoginActivity"
 
@@ -31,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate: started")
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -41,9 +42,22 @@ class LoginActivity : AppCompatActivity() {
                         AuthenticationInjector.provideLoginViewModelFactory() }
                     val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                     try {
+                        val loadingScreen = LoadingScreen(this,
+                            R.layout.google_login_loading_screen).also { it.start() }
+
                         val account = task.getResult(ApiException::class.java)
                         Log.d(TAG, "firebaseAuthWithGoogle:" + account.id)
-                        viewModel.signInWithGoogle(account.idToken!!)
+                        viewModel.signInWithGoogle(account.idToken!!, {
+                            Log.d(TAG, "firebaseAuthWithGoogle: succeeded")
+                            loadingScreen.end()
+                            finish()
+                            startActivity(Intent(this, MainActivity::class.java))
+                        }, {
+                            Log.w(TAG, "firebaseAuthWithGoogle: failed")
+                            loadingScreen.end()
+                            val errorDialog = ErrorDialog(this, R.layout.google_login_error)
+                            errorDialog.start()
+                        })
                     } catch(e: ApiException) {
                         Log.w(TAG, "Google sign in failed", e)
                     }
@@ -51,6 +65,7 @@ class LoginActivity : AppCompatActivity() {
             }
 
         initUI()
+        Log.d(TAG, "onCreate: ended")
     }
 
     private fun initUI() {
@@ -65,23 +80,22 @@ class LoginActivity : AppCompatActivity() {
         binding.login.setOnClickListener {
             if(checkLoginDataForSignIn()) {
                 val loadingScreen = LoadingScreen(this, R.layout.login_loading_screen)
-                    .also { it.start() }
+                loadingScreen.start()
+
                 viewModel.signInWithEmail(
                     binding.email.text.toString(),
-                    binding.password.text.toString()
-                )
-                viewModel.getSignInUserWithEmailResult().observe(this, {
-                    if (it) {
-                        Log.d(TAG, "User signed in successfully")
+                    binding.password.text.toString(), {
+                        Log.d(TAG, "Sign In with email: succeeded")
                         loadingScreen.end()
                         finish()
                         startActivity(Intent(this, MainActivity::class.java))
-                    } else {
-                        Log.w(TAG, "User failed to login")
+                    }, {
+                        Log.d(TAG, "Sign In with email: failed")
                         loadingScreen.end()
-                        ErrorDialog(this, R.layout.login_error).start()
+                        val errorDialog = ErrorDialog(this, R.layout.login_error)
+                        errorDialog.start()
                     }
-                })
+                )
             }
         }
 
@@ -94,19 +108,6 @@ class LoginActivity : AppCompatActivity() {
             val loadingScreen = LoadingScreen(this, R.layout.google_login_loading_screen)
                 .also { it.start() }
             googleSignInActivityLauncher.launch(googleSignInClient.signInIntent)
-            viewModel.getAuthUserWithGoogleResult().observe(this, {
-                if(it) {
-                    Log.d(TAG, "Sign in with google: success")
-                    loadingScreen.end()
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                }
-                else {
-                    Log.d(TAG, "Sign in with google: failed")
-                    loadingScreen.end()
-                    ErrorDialog(this, R.layout.google_login_error).start()
-                }
-            })
             Log.d(TAG,"googleSignIn: ended")
         }
 
