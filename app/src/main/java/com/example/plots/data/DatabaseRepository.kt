@@ -1,7 +1,6 @@
 package com.example.plots.data
 
-import android.app.Activity
-import android.widget.ImageView
+import android.net.Uri
 import androidx.lifecycle.LiveData
 
 class DatabaseRepository private constructor(
@@ -11,8 +10,7 @@ class DatabaseRepository private constructor(
     fun getUserPhone(): LiveData<String> = dataSrc.getUserPhone()
     fun getUserName(): LiveData<String> = dataSrc.getUserName()
     fun signOutUser() = dataSrc.signOutUser()
-    fun loadProfileImage(activity: Activity, imageHolder: ImageView) =
-        dataSrc.loadProfileImage(activity, imageHolder)
+    fun getProfileImageUri(): LiveData<Uri>? = dataSrc.getProfileImageUri()
 
     companion object {
         @Volatile private var instance: DatabaseRepository? = null

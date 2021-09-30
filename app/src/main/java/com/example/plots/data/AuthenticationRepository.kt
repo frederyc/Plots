@@ -7,30 +7,27 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 class AuthenticationRepository private constructor(
     private val dataSrc: RemoteDataSourceFirebase) {
 
-    fun signInWithEmail(email: String, password: String) {
-        dataSrc.signInWithEmail(email, password)
+    fun signInWithEmail(email: String, password: String, signInWithEmailSucceeded: () -> Unit,
+                        signInWithEmailFailed: () -> Unit) {
+        dataSrc.signInWithEmail(email, password, signInWithEmailSucceeded,
+            signInWithEmailFailed)
     }
 
-    fun createUserWithEmail(name: String, phone: String, email: String, password: String) {
-        dataSrc.createUserWithEmail(name, phone, email, password)
+    fun createUserWithEmail(name: String, phone: String, email: String, password: String,
+                            onAccountCreationSuccess: () -> Unit,
+                            onAccountCreationFailure: () -> Unit) {
+        dataSrc.createUserWithEmail(name, phone, email, password,
+            onAccountCreationSuccess, onAccountCreationFailure)
     }
 
-    fun signInWithGoogle(idToken: String) {
-        dataSrc.signInWithGoogle(idToken)
+    fun signInWithGoogle(idToken: String, signInWithGoogleSucceeded: () -> Unit,
+                         signInWithGoogleFailed: () -> Unit) {
+        dataSrc.signInWithGoogle(idToken, signInWithGoogleSucceeded, signInWithGoogleFailed)
     }
 
     fun getGoogleSignInClient(activity: Activity, defaultWebClientID: String):
             LiveData<GoogleSignInClient> =
         dataSrc.getGoogleSignInClient(activity, defaultWebClientID)
-
-    fun getAuthUserWithGoogleResult(): LiveData<Boolean> = dataSrc.getAuthUserWithGoogleResult()
-
-    fun getSignInUserWithEmailResult(): LiveData<Boolean> = dataSrc.getSignInUserWithEmailResult()
-
-    fun getCreateUserWithEmailResult(): LiveData<Boolean> = dataSrc.getCreateUserWithEmailResult()
-
-    fun getCreateUserPersonalDataResult(): LiveData<Boolean> =
-        dataSrc.getCreateUserPersonalDataResult()
 
     companion object {
         @Volatile private var instance: AuthenticationRepository? = null

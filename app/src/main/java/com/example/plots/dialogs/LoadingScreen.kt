@@ -10,8 +10,7 @@ class LoadingScreen(private val activity: Activity, private val resource: Int) {
     @SuppressLint("InflateParams")
     fun start() {
         val builder = AlertDialog.Builder(activity)
-        builder.setView(activity.layoutInflater
-            .inflate(resource, null))
+        builder.setView(activity.layoutInflater.inflate(resource, null))
 
         dialog = builder.create()
         dialog.show()

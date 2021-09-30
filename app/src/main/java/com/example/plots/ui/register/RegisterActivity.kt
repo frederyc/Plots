@@ -22,6 +22,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "RegisterActivity: started")
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -30,53 +31,39 @@ class RegisterActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
 
         initUI()
+        Log.d(TAG, "RegisterActivity: ended")
     }
 
     private fun initUI() {
         val factory = AuthenticationInjector.provideRegisterViewModelFactory()
         val viewModel: RegisterViewModel by viewModels { factory }
 
-        binding.signIn.setOnClickListener {
-            finish()
-        }
+        binding.signIn.setOnClickListener { finish() }
 
         binding.signUp.setOnClickListener {
+            Log.d(TAG, "SignUp: started")
             if(checkUserDataForUpload()) {
                 val loadingScreen = LoadingScreen(this, R.layout.register_loading_screen)
-                    .also { it.start() }
-
+                loadingScreen.start()
+                Log.d(TAG, "SignUp: createUserWithEmail started")
                 viewModel.createUserWithEmail(
                     binding.name.text.toString(),
                     binding.phone.text.toString(),
                     binding.email.text.toString(),
-                    binding.password.text.toString())
-
-                viewModel.getCreateUserWithEmailResult().observe(this, {
-                    if(it) {
-                        viewModel.getCreateUserPersonalDataResult().observe(this, { p ->
-                            if(p) {
-                                auth.signOut()
-                                Log.d(TAG, "User registered successfully")
-                                Toast.makeText(baseContext,
-                                    "Registration successful!", Toast.LENGTH_LONG).show()
-                                loadingScreen.end()
-                                finish()
-                            }
-                            else {
-                                Log.w(TAG, "User failed to register (personal data")
-                                loadingScreen.end()
-                                ErrorDialog(this, R.layout.register_error).start()
-                            }
-                        })
-                    }
-                    else {
-                        Log.w(TAG, "User failed to register")
-                        Toast.makeText(baseContext,
-                            "User failed to register", Toast.LENGTH_SHORT).show()
+                    binding.password.text.toString(), {
                         loadingScreen.end()
-                    }
-                })
-
+                        Log.d(TAG, "User registered successfully")
+                        Toast.makeText(baseContext,
+                            "Registration succeeded", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }, {
+                        loadingScreen.end()
+                        Log.d(TAG, "User failed to register")
+                        Toast.makeText(baseContext,
+                            "Registration failed", Toast.LENGTH_SHORT).show()
+                        val errorDialog = ErrorDialog(this, R.layout.register_error)
+                        errorDialog.start()
+                    })
             }
         }
 

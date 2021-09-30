@@ -1,12 +1,10 @@
 package com.example.plots.data
 
 import android.app.Activity
-import android.app.TaskInfo
+import android.net.Uri
 import android.util.Log
-import android.widget.ImageView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -14,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 
+@Suppress("LABEL_NAME_CLASH")
 class RemoteDataSourceFirebase {
     private val TAG = "RemoteDataSourceFirebase"
 
@@ -21,42 +20,41 @@ class RemoteDataSourceFirebase {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     private val googleSignInClient = MutableLiveData<GoogleSignInClient>()
-    private val authUserWithGoogleResult = MutableLiveData<Boolean>()
-    private val createUserPersonalData = MutableLiveData<Boolean>()
-    private val createUserResult = MutableLiveData<Boolean>()
-    private val signInUserResult = MutableLiveData<Boolean>()
 
-    fun signInWithGoogle(idToken: String) {
+    fun signInWithGoogle(idToken: String, signInWithGoogleSucceeded: () -> Unit,
+        signInWithGoogleFailed: () -> Unit) {
         auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null))
-            .addOnSuccessListener {
-                Log.d(TAG, "signInWithGoogle: success")
-                authUserWithGoogleResult.value = true
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "signInWithGoogle: failure: ${it.exception}")
+                    signInWithGoogleFailed()
+                }
+                else {
+                    Log.d(TAG, "signInWithGoogle: success")
+                    signInWithGoogleSucceeded()
 
-                db.collection("Accounts")
-                    .whereEqualTo("signInType", "Google")
-                    .whereEqualTo("email", auth.currentUser?.email)
-                    .get().addOnSuccessListener {
-                        if(it.documents.size == 0)
-                            db.collection("Accounts")
-                                .add(Account("Google", auth.currentUser?.displayName,
-                                    auth.currentUser?.phoneNumber, auth.currentUser?.email))
-                                .addOnSuccessListener {
-                                    Log.d(TAG, "createUserWithGoogle (account data): success")
-                                    createUserPersonalData.value = true
-                                }.addOnFailureListener {
-                                    Log.w(TAG, "createUserWithGoogle (account data): failure: $it")
-                                    createUserPersonalData.value = false
-                                }
-                        else
-                            Log.d(TAG, "User ${auth.currentUser?.email} already has a Google " +
-                                    "account, signing them in")
-                    }.addOnFailureListener {
-                        Log.d(TAG, "Failed to fetch specific account from remote db: $it")
-                    }
+                    db.collection("Accounts")
+                        .whereEqualTo("signInType", "Google")
+                        .whereEqualTo("email", auth.currentUser?.email).get()
+                        .addOnSuccessListener { querySnapshot ->
+                            if(querySnapshot.documents.size == 0)
+                                db.collection("Accounts")
+                                    .add(Account("Google", auth.currentUser?.displayName,
+                                        auth.currentUser?.phoneNumber, auth.currentUser?.email))
+                                    .addOnSuccessListener {
+                                        Log.d(TAG, "createUserWithGoogle (account data): success")
+                                    }.addOnFailureListener { e ->
+                                        Log.w(TAG, "createUserWithGoogle (account data): " +
+                                                "failure: $e")
+                                    }
+                            else
+                                Log.d(TAG, "User ${auth.currentUser?.email} already has a Google " +
+                                        "account, signing them in")
+                        }.addOnFailureListener { e ->
+                            Log.w(TAG, "Failed to fetch specific account from remote db: $e")
+                        }
 
-            }.addOnFailureListener {
-                Log.w(TAG, "signInWithGoogle: failure: $it")
-                authUserWithGoogleResult.value = false
+                }
             }
     }
 
@@ -68,38 +66,40 @@ class RemoteDataSourceFirebase {
         return googleSignInClient
     }
 
-    fun signInWithFacebook() {}     //TODO
-
-    fun createUserWithEmail(name: String, phone: String, email: String, password: String) {
+    fun createUserWithEmail(name: String, phone: String, email: String, password: String,
+        onAccountCreationSuccess: () -> Unit, onAccountCreationFailure: () -> Unit) {
         auth.createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener {
-                Log.d(TAG, "createUserWithEmail: success")
-                createUserResult.value = true
-                db.collection("Accounts")
-                    .add(Account("Email", name, phone, email))
-                    .addOnSuccessListener {
-                        Log.d(TAG, "createUserWithEmail (account data): success")
-                        createUserPersonalData.value = true
-                    }.addOnFailureListener {
-                        Log.w(TAG, "createUserWithEmail (account data): failure: $it")
-                        createUserPersonalData.value = false
-                    }
-            }.addOnFailureListener {
-                Log.w(TAG, "createUserWithEmail: failure: $it")
-                createUserResult.value = false
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "createUserWithEmail: failure: ${it.exception}")
+                    onAccountCreationFailure()
+                }
+                else {
+                    Log.d(TAG, "createUserWithEmail: success")
+                    auth.signOut()
+                    onAccountCreationSuccess()
+                    db.collection("Accounts")
+                        .add(Account("Email", name, phone, email))
+                        .addOnSuccessListener {
+                            Log.d(TAG, "createUserWithEmail (account data): success")
+                        }.addOnFailureListener {
+                            Log.w(TAG, "createUserWithEmail (account data): failure: $it")
+                        }
+                }
             }
     }
 
-    fun signInWithEmail(email: String, password: String) {
+    fun signInWithEmail(email: String, password: String, signInWithEmailSucceeded: () -> Unit,
+        signInWithEmailFailed: () -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if(task.isSuccessful) {
-                    Log.d(TAG, "signInWithEmail: success")
-                    signInUserResult.value = true
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    signInWithEmailFailed()
+                    Log.w(TAG, "signInWithEmail failed: ${it.exception}")
                 }
                 else {
-                    Log.w(TAG, "signInWithEmail: failure", task.exception)
-                    signInUserResult.value = false
+                    signInWithEmailSucceeded()
+                    Log.d(TAG, "signInWithEmail succeeded")
                 }
             }
     }
@@ -137,39 +137,37 @@ class RemoteDataSourceFirebase {
             }
     }
 
-    //todo This is crap, change it
-    fun loadProfileImage(activity: Activity, imageHolder: ImageView) {
-        db.collection("Accounts")
-            .whereEqualTo("email", auth.currentUser?.email).get()
-            .addOnSuccessListener {
+    fun getProfileImageUri(): LiveData<Uri>? {
+        val imageUri = MutableLiveData<Uri>()
+        db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
+            .get().addOnSuccessListener {
                 when(it.size()) {
                     0 -> Log.w(TAG, "No account related to this email found")
                     1 -> {
                         when(it.documents[0].data?.get("signInType") as String) {
                             "Google" -> {
                                 Log.d(TAG, "SignInType: Google")
-                                Glide.with(activity).load(auth.currentUser?.photoUrl).into(imageHolder)
+                                if(auth.currentUser?.photoUrl == null)
+                                    Log.d(TAG, "Google user doesn't have a profile image")
+                                else
+                                    imageUri.value = auth.currentUser?.photoUrl
                             }
                             "Email" -> {
                                 Log.d(TAG, "SignInType: Email")
+                                //TODO
                             }
-                            else -> Log.w(TAG, "No sign in type detected")
+                            else -> {
+                                Log.w(TAG, "No sign in type detected")
+                            }
                         }
                     }
                     else -> Log.w(TAG, "Multiple accounts related to this email found")
                 }
             }.addOnFailureListener {
-                Log.w(TAG, "Querying accounts for loading profile image failed: $it")
+                Log.w(TAG, "Failed to find user: $it")
             }
+        return if(auth.currentUser?.photoUrl == null) null else imageUri
     }
 
     fun signOutUser() = auth.signOut()
-
-    fun getCreateUserWithEmailResult(): LiveData<Boolean> = createUserResult
-
-    fun getSignInUserWithEmailResult(): LiveData<Boolean> = signInUserResult
-
-    fun getCreateUserPersonalDataResult(): LiveData<Boolean> = createUserPersonalData
-
-    fun getAuthUserWithGoogleResult(): LiveData<Boolean> = authUserWithGoogleResult
 }
