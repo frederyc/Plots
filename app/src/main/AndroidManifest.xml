@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Plots">
         <activity
+            android:name=".ui.activities.updateCredentials.AccountEditInformation"
+            android:exported="true" />
+        <activity
             android:name=".ui.register.RegisterActivity"
             android:exported="true" />
         <activity

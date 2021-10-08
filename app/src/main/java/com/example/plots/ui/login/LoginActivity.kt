@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -106,7 +105,7 @@ class LoginActivity : AppCompatActivity() {
         binding.googleSignIn.setOnClickListener {
             Log.d(TAG,"googleSignIn: started")
             val loadingScreen = LoadingScreen(this, R.layout.google_login_loading_screen)
-                .also { it.start() }
+            loadingScreen.start()
             googleSignInActivityLauncher.launch(googleSignInClient.signInIntent)
             Log.d(TAG,"googleSignIn: ended")
         }
@@ -114,6 +113,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun checkLoginDataForSignIn(): Boolean {
+
         if(binding.email.text.toString().isEmpty()) {
             binding.email.error = "Please enter email"
             binding.email.requestFocus()

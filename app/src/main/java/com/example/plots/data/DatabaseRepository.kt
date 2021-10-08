@@ -1,5 +1,6 @@
 package com.example.plots.data
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.LiveData
 
@@ -10,7 +11,29 @@ class DatabaseRepository private constructor(
     fun getUserPhone(): LiveData<String> = dataSrc.getUserPhone()
     fun getUserName(): LiveData<String> = dataSrc.getUserName()
     fun signOutUser() = dataSrc.signOutUser()
-    fun getProfileImageUri(): LiveData<Uri>? = dataSrc.getProfileImageUri()
+
+    fun getProfileImage(getGoogleProfileImageSucceeded: (imageUri: Uri) -> Unit,
+                        getEmailProfileImageSucceeded: (bitmap: Bitmap?) -> Unit,
+                        getProfileImageFailure: () -> Unit) =
+        dataSrc.getProfileImage(getGoogleProfileImageSucceeded,
+            getEmailProfileImageSucceeded, getProfileImageFailure)
+
+    fun getUserSignInType(getUserSignInTypeSucceeded: (signInType: String) -> Unit,
+                          getUserSignInTypeFailure: () -> Unit) =
+        dataSrc.getUserSignInType(getUserSignInTypeSucceeded, getUserSignInTypeFailure)
+
+    fun updateUserPhoneNumber(newPhoneNumber: String, updateUserPhoneNumberSucceeded: () -> Unit,
+                              updateUserPhoneNumberFailure: () -> Unit) =
+        dataSrc.updateUserPhoneNumber(newPhoneNumber,
+            updateUserPhoneNumberSucceeded, updateUserPhoneNumberFailure)
+
+    fun updateUserName(newName: String, updateUserNameSucceeded: () -> Unit,
+                       updateUserNameFailure: () -> Unit ) =
+        dataSrc.updateUserName(newName, updateUserNameSucceeded, updateUserNameFailure)
+
+    fun uploadProfileImage(uri: Uri, uploadProfileImageSucceeded: () -> Unit,
+                           uploadProfileImageFailed: () -> Unit) =
+        dataSrc.uploadProfileImage(uri, uploadProfileImageSucceeded, uploadProfileImageFailed)
 
     companion object {
         @Volatile private var instance: DatabaseRepository? = null
