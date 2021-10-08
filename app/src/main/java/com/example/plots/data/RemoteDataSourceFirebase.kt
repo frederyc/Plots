@@ -1,6 +1,8 @@
 package com.example.plots.data
 
 import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -11,6 +13,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import java.io.File
+import java.lang.NullPointerException
+import java.util.*
 
 @Suppress("LABEL_NAME_CLASH")
 class RemoteDataSourceFirebase {
@@ -18,6 +25,7 @@ class RemoteDataSourceFirebase {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val storageRef: StorageReference = FirebaseStorage.getInstance().reference
 
     private val googleSignInClient = MutableLiveData<GoogleSignInClient>()
 
@@ -137,8 +145,9 @@ class RemoteDataSourceFirebase {
             }
     }
 
-    fun getProfileImageUri(): LiveData<Uri>? {
-        val imageUri = MutableLiveData<Uri>()
+    fun getProfileImage(getGoogleProfileImageSucceeded: (imageUri: Uri) -> Unit,
+                        getEmailProfileImageSucceeded: (bitmap: Bitmap?) -> Unit,
+                        getProfileImageFailure: () -> Unit) {
         db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
             .get().addOnSuccessListener {
                 when(it.size()) {
@@ -150,23 +159,201 @@ class RemoteDataSourceFirebase {
                                 if(auth.currentUser?.photoUrl == null)
                                     Log.d(TAG, "Google user doesn't have a profile image")
                                 else
-                                    imageUri.value = auth.currentUser?.photoUrl
+                                    getGoogleProfileImageSucceeded(auth.currentUser?.photoUrl!!)
                             }
                             "Email" -> {
                                 Log.d(TAG, "SignInType: Email")
-                                //TODO
+                                try {
+                                    val id = it.documents[0].data?.get("profileImageKey") as String
+                                    val file = File.createTempFile("tempFile", "")
+                                    storageRef.child("ProfileImages/$id").getFile(file)
+                                        .addOnCompleteListener { downloadTask ->
+                                            if (downloadTask.exception != null) {
+                                                Log.w(
+                                                    TAG,
+                                                    "Retrieve email profile image: failed: " +
+                                                            "${downloadTask.exception}"
+                                                )
+                                                getProfileImageFailure()
+                                            } else {
+                                                Log.d(
+                                                    TAG,
+                                                    "Retrieve email profile image: succeeded"
+                                                )
+                                                val bitmap =
+                                                    BitmapFactory.decodeFile(file.absolutePath)
+                                                getEmailProfileImageSucceeded(bitmap)
+                                            }
+                                        }
+                                }
+                                catch (e: NullPointerException) {
+                                    Log.d(TAG, "No email profile image found")
+                                    getEmailProfileImageSucceeded(null)
+                                }
                             }
                             else -> {
                                 Log.w(TAG, "No sign in type detected")
+                                getProfileImageFailure()
                             }
                         }
                     }
-                    else -> Log.w(TAG, "Multiple accounts related to this email found")
+                    else -> {
+                        Log.w(TAG, "Multiple accounts related to this email found")
+                        getProfileImageFailure()
+                    }
                 }
             }.addOnFailureListener {
                 Log.w(TAG, "Failed to find user: $it")
+                getProfileImageFailure()
             }
-        return if(auth.currentUser?.photoUrl == null) null else imageUri
+    }
+
+    fun getUserSignInType(getUserSignInTypeSucceeded: (signInType: String) -> Unit,
+                          getUserSignInTypeFailure: () -> Unit) {
+        db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
+            .get().addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "getUserSignInType: failed")
+                    getUserSignInTypeFailure()
+                }
+                else if(it.result.documents.size != 1) {
+                    Log.w(TAG, "getUserSignInType: multiple users found with same email")
+                    getUserSignInTypeFailure()
+                }
+                else {
+                    Log.d(TAG, "getUserSignInType: succeeded")
+                    val signInType = it.result.documents[0].data?.get("signInType") as String
+                    getUserSignInTypeSucceeded(signInType)
+                }
+            }
+    }
+
+    fun updateUserPhoneNumber(newPhoneNumber: String, updateUserPhoneNumberSucceeded: () -> Unit,
+                              updateUserPhoneNumberFailure: () -> Unit) {
+        db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "updateUserPhoneNumber: failure: ${it.exception}")
+                    updateUserPhoneNumberFailure()
+                }
+                else if(it.result.documents.size != 1) {
+                    Log.w(TAG, "updateUserPhoneNumber: multiple users found with same email")
+                    updateUserPhoneNumberFailure()
+                }
+                else {
+                    it.result.documents[0].reference.update("phone", newPhoneNumber)
+                        .addOnCompleteListener() { task ->
+                            if(task.exception != null) {
+                                Log.w(TAG, "updateUserPhoneNumber: failure: ${task.exception}")
+                                updateUserPhoneNumberFailure()
+                            }
+                            else {
+                                Log.d(TAG, "updateUserPhoneNumber: succeeded")
+                                updateUserPhoneNumberSucceeded()
+                            }
+                        }
+                }
+            }
+    }
+
+    fun updateUserName(newName: String, updateUserNameSucceeded: () -> Unit,
+                       updateUserNameFailure: () -> Unit ) {
+        db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "updateUserName: failure: ${it.exception}")
+                    updateUserNameFailure()
+                }
+                else if(it.result.documents.size != 1) {
+                    Log.w(TAG, "updateUserName: multiple users found with same email")
+                    updateUserNameFailure()
+                }
+                else {
+                    it.result.documents[0].reference.update("name", newName)
+                        .addOnCompleteListener { task ->
+                            if(task.exception != null) {
+                                Log.w(TAG, "updateUserName: failure: ${task.exception}")
+                                updateUserNameFailure()
+                            }
+                            else {
+                                Log.d(TAG, "updateUserName: succeeded")
+                                updateUserNameSucceeded()
+                            }
+                        }
+                }
+            }
+    }
+
+    fun uploadProfileImage(uri: Uri, uploadProfileImageSucceeded: () -> Unit,
+                           uploadProfileImageFailed: () -> Unit) {
+        val key = UUID.randomUUID()
+        var oldKey: String?
+        db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "uploadProfileImage: failed (at finding related account)")
+                    uploadProfileImageFailed()
+                }
+                else if(it.result.documents.size != 1) {
+                    Log.w(TAG, "uploadProfileImage: multiple users found with same email")
+                    uploadProfileImageFailed()
+                }
+                else {
+                    /*  Check if there is already a profile photo related to account and delete it
+                        when changing the profile photo */
+                    it.result.documents[0].reference.get()
+                        .addOnCompleteListener {  task ->
+                            if(task.exception != null) {
+                                Log.w(TAG, "uploadProfileImage: failed (at retrieving old" +
+                                        "image key reference): ${task.exception}")
+                                uploadProfileImageFailed()
+                            }
+                            else {
+                                oldKey = task.result.get("profileImageKey") as String?
+                                if(oldKey != null)
+                                    storageRef.child("ProfileImages/$oldKey.jpeg").delete()
+                                        .addOnCompleteListener { imageDeletion ->
+                                            if(imageDeletion.exception != null) {
+                                                Log.w(TAG, "Failed to delete old profile" +
+                                                        "image: ${imageDeletion.exception}")
+                                                uploadProfileImageFailed()
+                                            }
+                                            else
+                                                Log.d(TAG, "Image with id=$oldKey was " +
+                                                        "successfully deleted")
+                                        }
+                            }
+                        }
+
+                    // Update 'profileImageKey' path in FireStore record related to current account
+                    it.result.documents[0].reference.update("profileImageKey", key.toString())
+                        .addOnCompleteListener { task ->
+                            if(task.exception != null) {
+                                Log.w(TAG, "uploadProfileImage: failed " +
+                                        "(at adding image key reference)")
+                                uploadProfileImageFailed()
+                            }
+                            else
+                                Log.d(TAG, "uploadProfileImage: key set succeeded")
+                        }
+                }
+            }
+
+        // Upload new profile image to FireStore
+        storageRef.child("ProfileImages/$key").putFile(uri)
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "Upload profile image: failed: ${it.exception}")
+                    uploadProfileImageFailed()
+                }
+                else {
+                    Log.d(TAG, "Upload profile image: succeeded")
+                    uploadProfileImageSucceeded()
+                }
+            }
     }
 
     fun signOutUser() = auth.signOut()

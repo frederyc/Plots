@@ -2,6 +2,7 @@ package com.example.plots.ui.fragments.account
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,32 +14,67 @@ import com.example.plots.databinding.FragmentAccountBinding
 import com.example.plots.R
 import com.example.plots.ui.login.LoginActivity
 import com.example.plots.utils.AuthenticationInjector
-import com.google.firebase.auth.FirebaseAuth
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import com.bumptech.glide.Glide
 import com.example.plots.dialogs.LoadingScreen
-import com.example.plots.ui.login.LoginViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.common.api.ApiException
+import com.example.plots.ui.activities.updateCredentials.AccountEditInformation
 
 class AccountFragment : Fragment(R.layout.fragment_account) {
     private val TAG = "AccountFragment"
 
     private lateinit var binding: FragmentAccountBinding
     private lateinit var googleSignInActivityLauncher: ActivityResultLauncher<Intent>
+    private lateinit var resultContracts: ActivityResultLauncher<Intent>
 
     private var name = String()
     private var email = String()
     private var phone = String()
-    private var profileImageUri: Uri? = null
+    private var profileImageUri: Uri? = null            // Used to retrieve google profile image
+    private var profileImageBitmap: Bitmap? = null      // User to retrieve email profile image
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate: started")
         super.onCreate(savedInstanceState)
+
+        val factory = AuthenticationInjector.provideAccountViewModelFactory()
+        val viewModel: AccountViewModel by viewModels { factory }
+
+        resultContracts =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            when(it.resultCode) {
+                Activity.RESULT_OK -> {
+                    viewModel.getUserName().observe(this, { userName ->
+                        name = userName
+                        loadUserNameToUI()
+                        Log.d(TAG, "Finished loading name")
+                    })
+                    viewModel.getUserPhone().observe(this, { userPhone ->
+                        phone = userPhone
+                        loadUserPhoneToUI()
+                        Log.d(TAG, "Finished loading phone")
+                    })
+                    viewModel.getProfileImage({
+                        Log.w(TAG, "Shouldn't be possible")
+                    }, { bitmap ->
+                        if(bitmap != null) {
+                            profileImageBitmap = bitmap
+                            loadUserProfileImage()
+                        }
+                        Log.d(TAG, "Finished loading profile photo")
+                    }, {
+                        Log.w(TAG, "Error loading profile image")
+                    })
+                }
+                Activity.RESULT_CANCELED -> Log.d(TAG, "No data to update")
+                else -> Log.w(TAG, "Update credentials" +
+                        " activity returned unknown code: ${it.resultCode}")
+            }
+        }
+
         getUserData()
+
         Log.d(TAG, "onCreate: ended")
     }
 
@@ -65,8 +101,8 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
         Log.d(TAG, "getUserData: started")
         val factory = AuthenticationInjector.provideAccountViewModelFactory()
         val viewModel: AccountViewModel by viewModels { factory }
-        val loadingScreen =
-            LoadingScreen(activity as Activity, R.layout.loading_screen).also { it.start() }
+        val loadingScreen = LoadingScreen(activity as Activity, R.layout.loading_screen)
+        loadingScreen.start()
         viewModel.getUserName().observe(this, {
             name = it
             loadUserNameToUI()
@@ -82,19 +118,21 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
             loadUserEmailToUI()
             Log.d(TAG, "Finished loading email")
         })
-
-        //todo change this
-        viewModel.getProfileImageUri()?.let {
-            it.observe(this, { uri ->
-                profileImageUri = uri
-                loadUserProfileImage()
-                loadingScreen.end()
-                Log.d(TAG, "Finished loading image")
-            })
-        }
-        if(viewModel.getProfileImageUri() == null)
+        viewModel.getProfileImage({
+            profileImageUri = it
+            loadUserProfileImage()
             loadingScreen.end()
-        //todo change this
+            Log.d(TAG, "Finished loading google profile image")
+        }, {
+            profileImageBitmap = it
+            Log.d(TAG, "BITMAP TEST: $profileImageBitmap")
+            loadUserProfileImage()
+            loadingScreen.end()
+            Log.d(TAG, "Finished loading email profile image")
+        }, {
+            Log.w(TAG, "failed to retrieve profile image")
+            loadingScreen.end()
+        })
 
         Log.d(TAG, "getUserData: ended")
     }
@@ -110,9 +148,10 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
     private fun loadUserEmailToUI() { binding.email.text = email }
     private fun loadUserPhoneToUI() { binding.phone.text = phone }
     private fun loadUserProfileImage() {
-        profileImageUri?.let {
-            Glide.with(activity as Activity).load(it).into(binding.profileImage)
-        }
+        if(profileImageUri != null)
+            Glide.with(activity as Activity).load(profileImageUri).into(binding.profileImage)
+        else if(profileImageBitmap != null)
+            binding.profileImage.setImageBitmap(profileImageBitmap)
     }
 
     private fun initButtonBehaviour() {
@@ -122,6 +161,9 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
             viewModel.signOutUser()
             activity?.finish()
             startActivity(Intent(activity?.baseContext, LoginActivity::class.java))
+        }
+        binding.updateCredentials.setOnClickListener {
+            resultContracts.launch(Intent(context, AccountEditInformation::class.java))
         }
     }
 

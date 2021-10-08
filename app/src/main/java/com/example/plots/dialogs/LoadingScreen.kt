@@ -11,10 +11,14 @@ class LoadingScreen(private val activity: Activity, private val resource: Int) {
     fun start() {
         val builder = AlertDialog.Builder(activity)
         builder.setView(activity.layoutInflater.inflate(resource, null))
+        builder.setCancelable(false)
 
         dialog = builder.create()
         dialog.show()
     }
 
-    fun end() { dialog.dismiss() }
+    fun end() {
+        if(dialog.isShowing)
+            dialog.dismiss()
+    }
 }
