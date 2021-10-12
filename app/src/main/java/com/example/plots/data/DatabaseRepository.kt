@@ -35,6 +35,13 @@ class DatabaseRepository private constructor(
                            uploadProfileImageFailed: () -> Unit) =
         dataSrc.uploadProfileImage(uri, uploadProfileImageSucceeded, uploadProfileImageFailed)
 
+    fun uploadPropertyToDatabase(
+        property: Property,
+        uris: ArrayList<Uri?>,
+        uploadPropertyToDatabaseSucceeded: () -> Unit,
+        uploadPropertyToDatabaseFailed: () -> Unit) = dataSrc.uploadPropertyToDatabase(
+        property, uris, uploadPropertyToDatabaseSucceeded, uploadPropertyToDatabaseFailed)
+
     companion object {
         @Volatile private var instance: DatabaseRepository? = null
 

@@ -19,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
 import com.example.plots.dialogs.LoadingScreen
+import com.example.plots.ui.activities.createListing.CreateListingActivity
 import com.example.plots.ui.activities.updateCredentials.AccountEditInformation
 
 class AccountFragment : Fragment(R.layout.fragment_account) {
@@ -164,6 +165,9 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
         }
         binding.updateCredentials.setOnClickListener {
             resultContracts.launch(Intent(context, AccountEditInformation::class.java))
+        }
+        binding.createListing.setOnClickListener {
+            startActivity(Intent(context, CreateListingActivity::class.java))
         }
     }
 

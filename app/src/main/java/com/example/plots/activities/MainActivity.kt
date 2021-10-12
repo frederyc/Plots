@@ -89,12 +89,16 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
         else
-            binding.bottomNavigation.setSelectedItemId(R.id.nav_feed)
+            binding.bottomNavigation.selectedItemId = R.id.nav_feed
     }
 
     private fun printBackStack() {
         for(i in 0 until supportFragmentManager.backStackEntryCount)
             Log.d(TAG, "${supportFragmentManager.getBackStackEntryAt(i)}")
+    }
+
+    private fun test() {
+
     }
 
 }
