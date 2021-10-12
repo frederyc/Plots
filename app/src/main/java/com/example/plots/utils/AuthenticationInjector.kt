@@ -3,6 +3,7 @@ package com.example.plots.utils
 import com.example.plots.data.AuthenticationRepository
 import com.example.plots.data.DatabaseRepository
 import com.example.plots.data.RemoteDataSourceFirebase
+import com.example.plots.ui.activities.createListing.CreateListingActivityViewModelFactory
 import com.example.plots.ui.activities.updateCredentials.AccountEditInformationViewModelFactory
 import com.example.plots.ui.fragments.account.AccountViewModelFactory
 import com.example.plots.ui.login.LoginViewModelFactory
@@ -28,6 +29,11 @@ object AuthenticationInjector {
     fun provideAccountEditInformationViewModelFactory(): AccountEditInformationViewModelFactory {
         val repo = DatabaseRepository.getInstance(RemoteDataSourceFirebase())
         return AccountEditInformationViewModelFactory(repo)
+    }
+
+    fun provideCreateListingActivityViewModelFactory(): CreateListingActivityViewModelFactory {
+        val repo = DatabaseRepository.getInstance(RemoteDataSourceFirebase())
+        return CreateListingActivityViewModelFactory(repo)
     }
 
 }

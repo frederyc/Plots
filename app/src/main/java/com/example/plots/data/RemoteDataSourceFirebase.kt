@@ -18,6 +18,7 @@ import com.google.firebase.storage.StorageReference
 import java.io.File
 import java.lang.NullPointerException
 import java.util.*
+import kotlin.collections.ArrayList
 
 @Suppress("LABEL_NAME_CLASH")
 class RemoteDataSourceFirebase {
@@ -357,4 +358,88 @@ class RemoteDataSourceFirebase {
     }
 
     fun signOutUser() = auth.signOut()
+
+    fun uploadPropertyToDatabase(
+        property: Property,
+        uris: ArrayList<Uri?>,
+        uploadPropertyToDatabaseSucceeded: () -> Unit,
+        uploadPropertyToDatabaseFailed: () -> Unit) {
+        getAccountFirestoreId( { accountKey ->
+            Log.d(TAG, "Succeeded to get account fireStore id")
+
+            uploadPropertyImagesToStorage(uris, { photosCollectionKey ->
+                Log.d(TAG, "Succeeded to upload property images to storage")
+
+                property.ownerKey = accountKey
+                property.photosCollectionKey = photosCollectionKey
+                db.collection("Properties").add(property)
+                    .addOnCompleteListener {
+                        if(it.exception != null) {
+                            Log.w(TAG, "Failed to upload property to firebase: ${it.exception}")
+                            uploadPropertyToDatabaseFailed()
+                        }
+                        else {
+                            Log.d(TAG, "Succeeded uploading property to firebase")
+                            uploadPropertyToDatabaseSucceeded()
+                        }
+                    }
+            }, {
+                Log.w(TAG, "Failed to upload property images")
+                uploadPropertyToDatabaseFailed()
+            })
+        }, {
+            Log.w(TAG, "Failed to get account firestore id")
+            uploadPropertyToDatabaseFailed()
+        })
+    }
+
+    private fun uploadPropertyImagesToStorage(
+        uris: ArrayList<Uri?>,
+        uploadPropertyImagesToStorageSucceeded: (storageID: String) -> Unit,
+        uploadPropertyImagesToStorageFailed: () -> Unit) {
+        val key = UUID.randomUUID()
+
+        // Upload images to storage
+        uris.forEach {
+            val imageKey = UUID.randomUUID()
+            storageRef.child("PropertyImages/$key/$imageKey").putFile(it!!)
+                .addOnCompleteListener { task ->
+                    if(task.exception != null) {
+                        Log.w(TAG, "uploadPropertyImagesToStorageFailed: ${task.exception}")
+                        uploadPropertyImagesToStorageFailed()
+                    }
+                    else {
+                        Log.d(TAG, "Uploading image with id: $imageKey succeeded")
+                        if(it == uris.last())
+                            uploadPropertyImagesToStorageSucceeded(key.toString())
+                    }
+                }
+        }
+
+    }
+
+    private fun getAccountFirestoreId(
+        getAccountFirestoreIdSucceeded: (id: String) -> Unit,
+        getAccountFirestoreIdFailed: () -> Unit) {
+        db.collection("Accounts").whereEqualTo("email", auth.currentUser?.email)
+            .get().addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "getAccountFirestoreIdFailed: ${it.exception}")
+                    getAccountFirestoreIdFailed()
+                }
+                else
+                    when(it.result.documents.size) {
+                        1 -> {
+                            Log.d(TAG, "getAccountFirestoreIdSucceeded")
+                            val id = it.result.documents[0].id
+                            getAccountFirestoreIdSucceeded(id)
+                        }
+                        else -> {
+                            Log.w(TAG, "Multiple or none fireStore instances related to account found")
+                            getAccountFirestoreIdFailed()
+                        }
+                    }
+            }
+    }
+
 }
