@@ -17,6 +17,9 @@ class FragmentPriceAndSize : Fragment(R.layout.fragment_price_and_size) {
     private var bathroomsNumber: Int = 0
     private var kitchensNumber: Int = 0
 
+    private var price = ""
+    private var surface = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -29,7 +32,15 @@ class FragmentPriceAndSize : Fragment(R.layout.fragment_price_and_size) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentPriceAndSizeBinding.bind(view)
+        binding.price.editText?.text?.append(price)
+        binding.suface.editText?.text?.append(surface)
         initUI()
+    }
+
+    override fun onDestroyView() {
+        price = binding.price.editText?.text.toString()
+        surface = binding.suface.editText?.text.toString()
+        super.onDestroyView()
     }
 
     // To be used by activity code
@@ -39,8 +50,8 @@ class FragmentPriceAndSize : Fragment(R.layout.fragment_price_and_size) {
 
         return arrayListOf(
             if (binding.forSaleRadioButton.isChecked) 1 else 0,
-            if(priceString == "") 0 else priceString.toInt(),
-            if(surfaceString == "") 0 else surfaceString.toInt(),
+            priceString.toInt(),
+            surfaceString.toInt(),
             bedroomsNumber, bathroomsNumber, kitchensNumber
         )
     }
