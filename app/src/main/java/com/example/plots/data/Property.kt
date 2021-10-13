@@ -3,6 +3,7 @@ package com.example.plots.data
 data class Property(
     var ownerKey: String? = null,
     var photosCollectionKey: String? = null,
+    var imageKeys: Map<String, String>? = null,
     var propertyType: String? = null,
     var amenities: Map<String, Int>? = null,
     var listingType: String? = null,

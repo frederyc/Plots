@@ -12,6 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -359,6 +360,127 @@ class RemoteDataSourceFirebase {
 
     fun signOutUser() = auth.signOut()
 
+    fun getPropertyInformationById(propertyId: String,
+        getPropertyInformationByIdSucceeded: (property: Property?) -> Unit,
+        getPropertyInformationByIdFailed: () -> Unit
+    ) {
+        val property = Property()
+        db.collection("Properties").document(propertyId)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "Couldn't find property: ${it.exception}")
+                    getPropertyInformationByIdFailed()
+                }
+                else {
+                    val res = it.result
+                    property.propertyType = res.get("propertyType") as String
+                    property.amenities = res.get("amenities") as Map<String, Int>
+                    property.listingType = res.get("listingType") as String
+                    property.price = (res.get("price") as Long).toInt()
+                    property.surface = (res.get("surface") as Long).toInt()
+                    property.bedrooms = (res.get("bedrooms") as Long).toInt()
+                    property.bathrooms = (res.get("bathrooms") as Long).toInt()
+                    property.kitchens = (res.get("kitchens") as Long).toInt()
+                    property.description = res.get("description") as String
+                    getPropertyInformationByIdSucceeded(property)
+                }
+            }
+    }
+
+    fun getPropertyOwnersInformationById(propertyId: String,
+        getPropertyOwnersInformationByIdSucceeded: (ownerData: OwnerData?) -> Unit,
+        getPropertyOwnersInformationByIdFailed: () -> Unit
+    ) {
+        db.collection("Properties").document(propertyId)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "Couldn't find property: ${it.exception}")
+                    getPropertyOwnersInformationByIdFailed()
+                }
+                else {
+                    db.collection("Accounts")
+                        .document(it.result.get("ownerKey") as String)
+                        .get()
+                        .addOnCompleteListener { task ->
+                            if(task.exception != null) {
+                                Log.w(TAG, "Couldn't find account related to properiety: ${it.exception}")
+                                getPropertyOwnersInformationByIdFailed()
+                            }
+                            else {
+                                val ownerData = OwnerData(
+                                    task.result.get("name") as String,
+                                    task.result.get("email") as String,
+                                    task.result.get("phone") as String,
+                                    task.result.get("signInType") as String
+                                )
+                                getPropertyOwnersInformationByIdSucceeded(ownerData)
+                            }
+                        }
+                }
+            }
+    }
+
+    fun getAllPhotosOfProperty(propertyId: String,
+        getAllPhotosOfPropertySucceeded: (bitmaps: ArrayList<Bitmap>) -> Unit,
+        getAllPhotosOfPropertyFailed: () -> Unit) {
+
+        db.collection("Properties").document(propertyId)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "Failed to find specific property: ${it.exception}")
+                    getAllPhotosOfPropertyFailed()
+                }
+                else {
+                    val photoCollectionKey = it.result.data?.get("photosCollectionKey") as String
+                    val photoPathMap = it.result.data?.get("imageKeys") as Map<*, *>
+                    val photoPathArray = ArrayList<String>()
+                    photoPathMap.forEach { mapEntry ->
+                        photoPathArray.add(mapEntry.value as String)
+                    }
+
+                    if(photoPathArray.size == 0) {
+                        // No photos related to property found
+                        getAllPhotosOfPropertySucceeded(ArrayList())
+                        Log.d(TAG, "No images related to property found")
+                    }
+                    else {
+                        val bitmaps = ArrayList<Bitmap>()
+                        loadImagesIntoList(0, photoCollectionKey, bitmaps, photoPathArray) { bitmaps_ ->
+                            getAllPhotosOfPropertySucceeded(bitmaps_)
+                        }
+                    }
+                }
+            }
+    }
+
+    private fun loadImagesIntoList(cnt: Int, collectionKey: String, listToAdd: ArrayList<Bitmap>,
+                                   list: ArrayList<String>, callBackFnc: (array: ArrayList<Bitmap>) -> Unit)
+    {
+        if(cnt < list.size) {
+            val file = File.createTempFile("tempFile", "")
+            storageRef.child("PropertyImages/$collectionKey/${list[cnt]}").getFile(file)
+                .addOnCompleteListener {
+                    if(it.exception != null)
+                        Log.e(TAG, "Failed to download image: ${it.exception}")
+                    else {
+                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                        listToAdd.add(bitmap)
+                        Log.d(TAG, "cnt = $cnt")
+                        loadImagesIntoList(cnt + 1, collectionKey, listToAdd, list, callBackFnc)
+                    }
+                }
+        }
+        else {
+            Log.d(TAG, "ended fnc")
+            callBackFnc(listToAdd)
+            return
+        }
+
+    }
+
     fun uploadPropertyToDatabase(
         property: Property,
         uris: ArrayList<Uri?>,
@@ -367,11 +489,11 @@ class RemoteDataSourceFirebase {
         getAccountFirestoreId( { accountKey ->
             Log.d(TAG, "Succeeded to get account fireStore id")
 
-            uploadPropertyImagesToStorage(uris, { photosCollectionKey ->
+            uploadPropertyImagesToStorage(uris, { photosCollectionKey, imageKeys ->
                 Log.d(TAG, "Succeeded to upload property images to storage")
-
                 property.ownerKey = accountKey
                 property.photosCollectionKey = photosCollectionKey
+                property.imageKeys = arrayToMap(imageKeys)
                 db.collection("Properties").add(property)
                     .addOnCompleteListener {
                         if(it.exception != null) {
@@ -393,15 +515,122 @@ class RemoteDataSourceFirebase {
         })
     }
 
+    fun getCurrentUserListingItems(
+        getCurrentUserListingItemsSucceeded: (array: ArrayList<PropertyCardView>) -> Unit,
+        getCurrentUserListingItemsFailed: () -> Unit) {
+        getAccountFirestoreId({
+            db.collection("Properties").whereEqualTo("ownerKey", it)
+                .get()
+                .addOnCompleteListener { task ->
+                    if(task.exception != null) {
+                        Log.w(TAG, "Failed to retrieve owner key: ${task.exception}")
+                        getCurrentUserListingItemsFailed()
+                    }
+                    else {
+                        val list = ArrayList<PropertyCardView>()
+                        if(task.result.documents.size == 0)
+                            getCurrentUserListingItemsSucceeded(ArrayList())
+                        else {
+                            loadPropertiesIntoList(0, list, task.result.documents) {
+                                getCurrentUserListingItemsSucceeded(
+                                    list
+                                )
+                            }
+                        }
+                    }
+                }
+        }, {
+            Log.w(TAG, "failed to retrieve account firestore id")
+            getCurrentUserListingItemsFailed()
+        })
+    }
+
+    private fun loadPropertiesIntoList(cnt: Int, listToAdd: ArrayList<PropertyCardView>,
+        list: List<DocumentSnapshot>, callBackFnc: (array: ArrayList<PropertyCardView>) -> Unit)
+    {
+        if(cnt < list.size) {
+            getFirstImageOfProperty(list[cnt].id, {
+                val i = list[cnt]
+                listToAdd.add(PropertyCardView(
+                    i.id, it, i.get("listingType") as String,
+                    (i.get("price") as Long).toInt(),
+                    (i.get("surface") as Long).toInt(),
+                    (i.get("bedrooms") as Long).toInt(),
+                    (i.get("bathrooms") as Long).toInt(),
+                    (i.get("kitchens") as Long).toInt())
+                )
+
+                loadPropertiesIntoList(cnt + 1, listToAdd, list, callBackFnc)
+            }, {
+                Log.e(TAG, "some error has occurred")
+            })
+        }
+        else {
+            callBackFnc(listToAdd)
+            return
+        }
+    }
+
+    private fun getFirstImageOfProperty(propertyId: String,
+            getFirstImageOfPropertySucceeded: (imageBitmap: Bitmap?) -> Unit,
+            getFirstImageOfPropertyFailed: () -> Unit) {
+        db.collection("Properties").document(propertyId)
+            .get()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "Failed to find property: ${it.exception}")
+                    getFirstImageOfPropertyFailed()
+                }
+                else {
+                    val collectionPath = it.result.data?.get("photosCollectionKey") as String?
+                    val firstImagePathMap = (it.result.data?.get("imageKeys") as Map<*, *>?)
+                    var firstImagePath: String? = null
+
+                    if(firstImagePathMap != null)
+                        firstImagePath = firstImagePathMap["0"] as String
+
+                    val file = File.createTempFile("tempFile", "")
+                    if(collectionPath != null && firstImagePath != null) {
+                        storageRef.child("PropertyImages/$collectionPath/$firstImagePath")
+                            .getFile(file)
+                            .addOnCompleteListener { task ->
+                                if(task.exception != null) {
+                                    Log.w(TAG, "Failed to download first image photo: ${task.exception}")
+                                    getFirstImageOfPropertyFailed()
+                                }
+                                else {
+                                    Log.d(TAG, "Successfully retrieved first image")
+                                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                                    getFirstImageOfPropertySucceeded(bitmap)
+                                }
+                            }
+                    }
+                    else {
+                        Log.d(TAG, "No image to retrieve")
+                        getFirstImageOfPropertySucceeded(null)
+                    }
+                }
+            }
+    }
+
+    private fun arrayToMap(array: ArrayList<String>): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        for(i in 0 until array.size)
+            map[i.toString()] = array[i]
+        Log.d(TAG, "ARRAY TO MAP TEST: $map")
+        return map
+    }
+
     private fun uploadPropertyImagesToStorage(
         uris: ArrayList<Uri?>,
-        uploadPropertyImagesToStorageSucceeded: (storageID: String) -> Unit,
+        uploadPropertyImagesToStorageSucceeded: (storageID: String, imageKeys: ArrayList<String>) -> Unit,
         uploadPropertyImagesToStorageFailed: () -> Unit) {
         val key = UUID.randomUUID()
-
+        val imageKeys = ArrayList<String>()
         // Upload images to storage
         uris.forEach {
             val imageKey = UUID.randomUUID()
+            imageKeys.add(imageKey.toString())
             storageRef.child("PropertyImages/$key/$imageKey").putFile(it!!)
                 .addOnCompleteListener { task ->
                     if(task.exception != null) {
@@ -410,12 +639,13 @@ class RemoteDataSourceFirebase {
                     }
                     else {
                         Log.d(TAG, "Uploading image with id: $imageKey succeeded")
-                        if(it == uris.last())
-                            uploadPropertyImagesToStorageSucceeded(key.toString())
+                        if(it == uris.last()) {
+                            Log.d(TAG, "TEST IMAGE KEYS: $imageKeys")
+                            uploadPropertyImagesToStorageSucceeded(key.toString(), imageKeys)
+                        }
                     }
                 }
         }
-
     }
 
     private fun getAccountFirestoreId(

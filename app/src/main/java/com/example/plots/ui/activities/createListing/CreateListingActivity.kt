@@ -50,10 +50,10 @@ class CreateListingActivity : AppCompatActivity() {
         super.onBackPressed()
         when(currentPage) {
             Page.PROPERTY_TYPE -> finish()
-            Page.PROPERTY_DETAILS -> currentPage = Page.PROPERTY_TYPE
+            Page.PROPERTY_PHOTOS -> currentPage = Page.PROPERTY_TYPE
+            Page.PROPERTY_DETAILS -> currentPage = Page.PROPERTY_PHOTOS
             Page.PROPERTY_PRICE -> currentPage = Page.PROPERTY_DETAILS
             Page.PROPERTY_DESCRIPTION -> currentPage = Page.PROPERTY_PRICE
-            Page.PROPERTY_PHOTOS -> currentPage = Page.PROPERTY_DESCRIPTION
         }
         updatePage()
     }
@@ -67,6 +67,13 @@ class CreateListingActivity : AppCompatActivity() {
         binding.next.setOnClickListener {
             when(currentPage) {
                 Page.PROPERTY_TYPE -> {
+                    supportFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragmentPropertyPhotos)
+                        .addToBackStack(null).commit()
+                    currentPage = Page.PROPERTY_PHOTOS
+                }
+                Page.PROPERTY_PHOTOS -> {
                     supportFragmentManager
                         .beginTransaction()
                         .replace(R.id.fragment_container, fragmentPropertyDetails)
@@ -86,34 +93,28 @@ class CreateListingActivity : AppCompatActivity() {
                     currentPage = Page.PROPERTY_DESCRIPTION
                 }
                 Page.PROPERTY_DESCRIPTION -> {
-                    supportFragmentManager
-                        .beginTransaction().replace(R.id.fragment_container, fragmentPropertyPhotos)
-                        .addToBackStack(null).commit()
-                    currentPage = Page.PROPERTY_PHOTOS
-                }
-                Page.PROPERTY_PHOTOS -> {
                     val loadingScreen = LoadingScreen(this, R.layout.uploading_loading_screen)
                     loadingScreen.start()
 
                     val listingTypeArray = fragmentPriceAndSize.getPriceAndSize()
-                    val property = Property(null, null,
+                    val property = Property(null, null, null,
                         fragmentPropertyType.getPropertyType(),
                         fragmentPropertyDetails.getAmenities().toMap(),
-                        if(listingTypeArray[0] == 0) "Sale" else "Rent",
+                        if(listingTypeArray[0] == 0) "For Sale" else "For Rent",
                         listingTypeArray[1], listingTypeArray[2], listingTypeArray[3],
                         listingTypeArray[4], listingTypeArray[5],
                         fragmentPropertyDescription.getDescription())
 
-                        viewModel.uploadPropertyToDatabase(
-                            property,
-                            fragmentPropertyPhotos.getImageUris(), {
-                                loadingScreen.end()
-                                finish()
-                            }, {
-                                Toast.makeText(baseContext, "Failed", Toast.LENGTH_LONG).show()
-                                loadingScreen.end()
-                                ErrorDialog(this, R.layout.uploading_error).start()
-                            })
+                    viewModel.uploadPropertyToDatabase(
+                        property,
+                        fragmentPropertyPhotos.getImageUris(), {
+                            loadingScreen.end()
+                            finish()
+                        }, {
+                            Toast.makeText(baseContext, "Failed", Toast.LENGTH_LONG).show()
+                            loadingScreen.end()
+                            ErrorDialog(this, R.layout.uploading_error).start()
+                        })
                 }
             }
             updatePage()
@@ -123,14 +124,14 @@ class CreateListingActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun updatePage() {
         binding.page.text = "${currentPage.ordinal + 1}/5"
-        if(currentPage == Page.PROPERTY_PHOTOS)
+        if(currentPage == Page.PROPERTY_DESCRIPTION)
             binding.next.text = "Finish"
-        if(currentPage != Page.PROPERTY_PHOTOS && binding.next.text == "Finish")
+        if(currentPage != Page.PROPERTY_DESCRIPTION && binding.next.text == "Finish")
             binding.next.text = "Next"
     }
 
     private enum class Page {
-        PROPERTY_TYPE, PROPERTY_DETAILS, PROPERTY_PRICE, PROPERTY_DESCRIPTION, PROPERTY_PHOTOS
+        PROPERTY_TYPE, PROPERTY_PHOTOS, PROPERTY_DETAILS, PROPERTY_PRICE, PROPERTY_DESCRIPTION
     }
 
 }

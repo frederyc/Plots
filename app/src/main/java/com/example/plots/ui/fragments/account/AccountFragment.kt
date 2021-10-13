@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.example.plots.dialogs.LoadingScreen
 import com.example.plots.ui.activities.createListing.CreateListingActivity
 import com.example.plots.ui.activities.updateCredentials.AccountEditInformation
+import com.example.plots.ui.activities.viewMyListings.ViewMyListings
 
 class AccountFragment : Fragment(R.layout.fragment_account) {
     private val TAG = "AccountFragment"
@@ -137,7 +138,7 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
 
         Log.d(TAG, "getUserData: ended")
     }
-
+    
     private fun loadUserDataToUI() {
         loadUserNameToUI()
         loadUserEmailToUI()
@@ -158,17 +159,25 @@ class AccountFragment : Fragment(R.layout.fragment_account) {
     private fun initButtonBehaviour() {
         val factory = AuthenticationInjector.provideAccountViewModelFactory()
         val viewModel: AccountViewModel by viewModels { factory }
+
         binding.signOut.setOnClickListener {
             viewModel.signOutUser()
             activity?.finish()
             startActivity(Intent(activity?.baseContext, LoginActivity::class.java))
         }
+
         binding.updateCredentials.setOnClickListener {
             resultContracts.launch(Intent(context, AccountEditInformation::class.java))
         }
+
         binding.createListing.setOnClickListener {
             startActivity(Intent(context, CreateListingActivity::class.java))
         }
+
+        binding.viewMyListings.setOnClickListener {
+            startActivity(Intent(context, ViewMyListings::class.java))
+        }
+
     }
 
 }

@@ -87,10 +87,12 @@ class FragmentPropertyPhotos : Fragment(R.layout.fragment_property_description) 
     }
 
     private fun pickImagesFromGallery() {
+        Log.d(TAG, "pickImagesFromGallery: started")
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         resultContract.launch(intent)
+        Log.d(TAG, "pickImagesFromGallery: ended")
     }
 
 }

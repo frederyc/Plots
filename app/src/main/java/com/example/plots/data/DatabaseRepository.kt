@@ -42,6 +42,30 @@ class DatabaseRepository private constructor(
         uploadPropertyToDatabaseFailed: () -> Unit) = dataSrc.uploadPropertyToDatabase(
         property, uris, uploadPropertyToDatabaseSucceeded, uploadPropertyToDatabaseFailed)
 
+    fun getCurrentUserListingItems(
+        getCurrentUserListingItemsSucceeded: (array: ArrayList<PropertyCardView>) -> Unit,
+        getCurrentUserListingItemsFailed: () -> Unit) =
+        dataSrc.getCurrentUserListingItems(getCurrentUserListingItemsSucceeded,
+            getCurrentUserListingItemsFailed)
+
+    fun getAllPhotosOfProperty(propertyId: String,
+                               getAllPhotosOfPropertySucceeded: (bitmaps: ArrayList<Bitmap>) -> Unit,
+                               getAllPhotosOfPropertyFailed: () -> Unit) =
+        dataSrc.getAllPhotosOfProperty(propertyId, getAllPhotosOfPropertySucceeded,
+            getAllPhotosOfPropertyFailed)
+
+    fun getPropertyInformationById(propertyId: String,
+                                   getPropertyInformationByIdSucceeded: (property: Property?) -> Unit,
+                                   getPropertyInformationByIdFailed: () -> Unit) =
+        dataSrc.getPropertyInformationById(propertyId, getPropertyInformationByIdSucceeded,
+            getPropertyInformationByIdFailed)
+
+    fun getPropertyOwnersInformationById(propertyId: String,
+                                         getPropertyOwnersInformationByIdSucceeded: (ownerData: OwnerData?) -> Unit,
+                                         getPropertyOwnersInformationByIdFailed: () -> Unit) =
+        dataSrc.getPropertyOwnersInformationById(propertyId,
+            getPropertyOwnersInformationByIdSucceeded, getPropertyOwnersInformationByIdFailed)
+
     companion object {
         @Volatile private var instance: DatabaseRepository? = null
 
