@@ -33,4 +33,9 @@ class ListingExpandedViewModel(private val repo: DatabaseRepository) :  ViewMode
         repo.getProfileImage(getGoogleProfileImageSucceeded, getEmailProfileImageSucceeded,
             getProfileImageFailure)
 
+    fun deletePropertyById(propertyId: String,
+                           deletePropertyByIdSucceeded: () -> Unit,
+                           deletePropertyByIdFailed: () -> Unit) =
+        repo.deletePropertyById(propertyId, deletePropertyByIdSucceeded, deletePropertyByIdFailed)
+
 }

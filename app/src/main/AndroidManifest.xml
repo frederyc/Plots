@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.plots" >
+    package="com.example.plots">
 
-    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Plots" >
+        android:theme="@style/Theme.Plots">
+        <activity
+            android:name=".ui.activities.filterProperties.FilterProperties"
+            android:exported="true" />
         <activity
             android:name=".ui.activities.listingExpanded.ListingExpanded"
             android:exported="true" />
@@ -33,7 +37,7 @@
             android:exported="true" />
         <activity
             android:name=".activities.SplashScreen"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

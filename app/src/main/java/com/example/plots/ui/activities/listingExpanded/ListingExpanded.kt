@@ -1,7 +1,6 @@
 package com.example.plots.ui.activities.listingExpanded
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +15,9 @@ import com.example.plots.data.OwnerData
 import com.example.plots.data.Property
 import com.example.plots.databinding.ActivityListingExpandedBinding
 import com.example.plots.dialogs.LoadingScreen
+import com.example.plots.ui.fragments.account.AccountFragment
 import com.example.plots.utils.AuthenticationInjector
+import com.google.firebase.auth.FirebaseAuth
 import java.lang.StringBuilder
 
 class ListingExpanded() : AppCompatActivity() {
@@ -57,6 +58,7 @@ class ListingExpanded() : AppCompatActivity() {
 
                     handleOwnerData()
                     handlePropertyData()
+                    allowDeletion()
 
                     loadingScreen.end()
                     Log.d(TAG, "Successfully retrieved propriety data")
@@ -81,24 +83,43 @@ class ListingExpanded() : AppCompatActivity() {
     }
 
     private fun initUI() {
+        val factory = AuthenticationInjector.provideListingExpandedViewModelFactory()
+        val viewModel: ListingExpandedViewModel by viewModels { factory }
+
         binding.toolbar.back.setOnClickListener { finish() }
         binding.phone.setOnClickListener {
             val intent = Intent(Intent.ACTION_DIAL);
             intent.data = Uri.parse("tel:${ownerData.phone}")
             startActivity(intent)
         }
+        binding.delete.setOnClickListener {
+            val loadingScreen = LoadingScreen(this, R.layout.loading_screen)
+            loadingScreen.start()
+            viewModel.deletePropertyById(propertyId, {
+                Log.d(TAG, "successfully deleted property")
+                loadingScreen.end()
+                finish()
+            }, {
+                Log.w(TAG, "failed to delete property")
+                loadingScreen.end()
+            })
+        }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun handlePropertyData() {
-        val factory = AuthenticationInjector.provideListingExpandedViewModelFactory()
-        val viewModel: ListingExpandedViewModel by viewModels { factory }
-
         binding.bedroomsNumber.text = if(propertyData.bedrooms == 6) "6+"
             else propertyData.bedrooms.toString()
         binding.bathroomsNumber.text = if(propertyData.bathrooms == 6) "6+"
             else propertyData.bathrooms.toString()
         binding.kitchensNumber.text = if(propertyData.kitchens == 3) "3+"
             else propertyData.kitchens.toString()
+
+        binding.price.text = "${propertyData.price.toString()} $" +
+                if(propertyData.listingType == "For Rent") "/month" else ""
+        binding.surface.text = propertyData.surface.toString() + " sqm"
+        binding.propertyType.text = propertyData.propertyType
+        binding.listingType.text = propertyData.listingType
 
         binding.propertyDescription.text = propertyData.description
         binding.amenitiesList.text = test(propertyData.amenities!!)
@@ -108,14 +129,6 @@ class ListingExpanded() : AppCompatActivity() {
         val factory = AuthenticationInjector.provideListingExpandedViewModelFactory()
         val viewModel: ListingExpandedViewModel by viewModels { factory }
 
-        viewModel.getProfileImage({
-            binding.ownerImage.setImageURI(it)
-            Glide.with(this).load(it).into(binding.ownerImage)
-        }, {
-            binding.ownerImage.setImageBitmap(it)
-        }, {
-            Log.w(TAG, "Failed to load profile image")
-        })
         binding.ownerName.text = ownerData.name
         binding.ownerEmail.text = ownerData.email
     }
@@ -132,6 +145,14 @@ class ListingExpanded() : AppCompatActivity() {
                 }
         }
         return result.toString().dropLast(2)
+    }
+
+    private fun allowDeletion() {
+        binding.delete.visibility =
+            if(ownerData.email == FirebaseAuth.getInstance().currentUser?.email)
+                View.VISIBLE
+            else
+                View.GONE
     }
 
     private fun adapterImage(pos: Int): ImageView? = when(pos) {

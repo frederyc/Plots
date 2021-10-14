@@ -388,6 +388,23 @@ class RemoteDataSourceFirebase {
             }
     }
 
+    fun deletePropertyById(propertyId: String,
+                           deletePropertyByIdSucceeded: () -> Unit,
+                           deletePropertyByIdFailed: () -> Unit) {
+        /*** Improvised way because correct way doesn't work ***/
+        db.collection("Properties").document(propertyId)
+            .delete()
+            .addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "Failed to delete property")
+                    deletePropertyByIdFailed()
+                }
+                else {
+                    deletePropertyByIdSucceeded()
+                }
+            }
+    }
+
     fun getPropertyOwnersInformationById(propertyId: String,
         getPropertyOwnersInformationByIdSucceeded: (ownerData: OwnerData?) -> Unit,
         getPropertyOwnersInformationByIdFailed: () -> Unit
@@ -510,9 +527,92 @@ class RemoteDataSourceFirebase {
                 uploadPropertyToDatabaseFailed()
             })
         }, {
-            Log.w(TAG, "Failed to get account firestore id")
+            Log.w(TAG, "Failed to get account fireStore id")
             uploadPropertyToDatabaseFailed()
         })
+    }
+
+    fun getAllListingItems(propertyType: String, listingType: String,
+                           getAllListingItemsSucceeded: (array: ArrayList<PropertyCardView>) -> Unit,
+                           getAllListingItemsFailed: () -> Unit) {
+        if(propertyType.isEmpty() && listingType.isEmpty())
+            db.collection("Properties").get().addOnCompleteListener {
+                if(it.exception != null) {
+                    Log.w(TAG, "getAllListingItems: failed: ${it.exception}")
+                    getAllListingItemsFailed()
+                }
+                else {
+                    val list = ArrayList<PropertyCardView>()
+                    if(it.result.documents.size == 0)
+                        getAllListingItemsSucceeded(ArrayList())
+                    else {
+                        loadPropertiesIntoList(0, list, it.result.documents) {
+                            getAllListingItemsSucceeded(list)
+                        }
+                    }
+                }
+            }
+        else if(propertyType.isNotEmpty() && listingType.isEmpty())
+            db.collection("Properties").whereEqualTo("propertyType", propertyType)
+                .get()
+                .addOnCompleteListener {
+                    if(it.exception != null) {
+                        Log.w(TAG, "getAllListingItems: failed: ${it.exception}")
+                        getAllListingItemsFailed()
+                    }
+                    else {
+                        val list = ArrayList<PropertyCardView>()
+                        if(it.result.documents.size == 0)
+                            getAllListingItemsSucceeded(ArrayList())
+                        else {
+                            loadPropertiesIntoList(0, list, it.result.documents) {
+                                getAllListingItemsSucceeded(list)
+                            }
+                        }
+                    }
+                }
+        else if(propertyType.isEmpty() && listingType.isNotEmpty()) {
+            db.collection("Properties").whereEqualTo("listingType", listingType)
+                .get()
+                .addOnCompleteListener {
+                    if(it.exception != null) {
+                        Log.w(TAG, "getAllListingItems: failed: ${it.exception}")
+                        getAllListingItemsFailed()
+                    }
+                    else {
+                        val list = ArrayList<PropertyCardView>()
+                        if(it.result.documents.size == 0)
+                            getAllListingItemsSucceeded(ArrayList())
+                        else {
+                            loadPropertiesIntoList(0, list, it.result.documents) {
+                                getAllListingItemsSucceeded(list)
+                            }
+                        }
+                    }
+                }
+        }
+        else {
+            db.collection("Properties")
+                .whereEqualTo("listingType", listingType)
+                .whereEqualTo("propertyType", propertyType)
+                .get()
+                .addOnCompleteListener {
+                    if(it.exception != null) {
+                        Log.w(TAG, "getAllListingItems: failed: ${it.exception}")
+                        getAllListingItemsFailed()
+                    }
+                    else {
+                        val list = ArrayList<PropertyCardView>()
+                        if(it.result.documents.size == 0)
+                            getAllListingItemsSucceeded(ArrayList())
+                        else {
+                            loadPropertiesIntoList(0, list, it.result.documents) {
+                                getAllListingItemsSucceeded(list)
+                            }
+                        }
+                    }
+                }
+        }
     }
 
     fun getCurrentUserListingItems(
@@ -532,9 +632,7 @@ class RemoteDataSourceFirebase {
                             getCurrentUserListingItemsSucceeded(ArrayList())
                         else {
                             loadPropertiesIntoList(0, list, task.result.documents) {
-                                getCurrentUserListingItemsSucceeded(
-                                    list
-                                )
+                                getCurrentUserListingItemsSucceeded(list)
                             }
                         }
                     }

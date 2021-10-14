@@ -66,6 +66,17 @@ class DatabaseRepository private constructor(
         dataSrc.getPropertyOwnersInformationById(propertyId,
             getPropertyOwnersInformationByIdSucceeded, getPropertyOwnersInformationByIdFailed)
 
+    fun deletePropertyById(propertyId: String,
+                           deletePropertyByIdSucceeded: () -> Unit,
+                           deletePropertyByIdFailed: () -> Unit) =
+        dataSrc.deletePropertyById(propertyId, deletePropertyByIdSucceeded, deletePropertyByIdFailed)
+
+    fun getAllListingItems(propertyType: String, listingType: String,
+        getAllListingItemsSucceeded: (array: ArrayList<PropertyCardView>) -> Unit,
+        getAllListingItemsFailed: () -> Unit) =
+        dataSrc.getAllListingItems(propertyType, listingType,
+            getAllListingItemsSucceeded, getAllListingItemsFailed)
+
     companion object {
         @Volatile private var instance: DatabaseRepository? = null
 
