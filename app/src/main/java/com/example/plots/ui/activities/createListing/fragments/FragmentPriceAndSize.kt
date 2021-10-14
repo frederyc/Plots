@@ -49,7 +49,7 @@ class FragmentPriceAndSize : Fragment(R.layout.fragment_price_and_size) {
         val surfaceString = binding.suface.editText?.text.toString()
 
         return arrayListOf(
-            if (binding.forSaleRadioButton.isChecked) 1 else 0,
+            if (binding.forSaleRadioButton.isChecked) 0 else 1,
             priceString.toInt(),
             surfaceString.toInt(),
             bedroomsNumber, bathroomsNumber, kitchensNumber

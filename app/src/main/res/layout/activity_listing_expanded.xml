@@ -219,6 +219,128 @@
                 android:textSize="24sp"
                 android:fontFamily="@font/rozanova_hum_demo_semibold"
                 android:textColor="#b4b4b4"
+                android:text="Price &amp; Surface"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/rozanova_hum_demo_semibold"
+                    android:text="Price:"/>
+
+                <TextView
+                    android:id="@+id/price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/sentic_text_bold"
+                    android:text="price here"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/rozanova_hum_demo_semibold"
+                    android:text="Surface:"/>
+
+                <TextView
+                    android:id="@+id/surface"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/sentic_text_bold"
+                    android:text="surface here"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/rozanova_hum_demo_semibold"
+                    android:text="Type:"/>
+
+                <TextView
+                    android:id="@+id/propertyType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/sentic_text_bold"
+                    android:text="property type here"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/rozanova_hum_demo_semibold"
+                    android:text="Listing Type:"/>
+
+                <TextView
+                    android:id="@+id/listingType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:textColor="#646464"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/sentic_text_bold"
+                    android:text="listing type here"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textSize="24sp"
+                android:fontFamily="@font/rozanova_hum_demo_semibold"
+                android:textColor="#b4b4b4"
                 android:text="Seller"/>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -226,23 +348,13 @@
                 android:layout_marginHorizontal="8dp"
                 android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/ownerImage"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:src="@drawable/image_placeholder"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <LinearLayout
                     android:id="@+id/linearLayout3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
                     android:orientation="vertical"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/ownerImage"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <TextView
@@ -403,8 +515,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
-                android:layout_marginBottom="16dp"
-                android:text="Property Description jdsfsdhfhdsfhsdfkjsdfjksdhfhsdkfsdfksjkfsdahfskjfaskjfhsdfsdkjfsdfhksdhfkjsfhsdjkfhsdfsdfkjsdfhsdjkfsdfjksdfhsdkjfsdjkfsdhfjksdfkjsdkjfhsdkjfsdjkfkjsdfsdkjfhsdkjfjksdfhsdfhsdfsdshjksdhsdfjksdsdkjfsdkjfsdfjskfsdjfsdfkjsdfsdfsdsdkfksdkjhfsd"/>
+                android:layout_marginBottom="8dp"
+                android:text="Property Description"/>
+
+            <Button
+                android:id="@+id/delete"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="delete"
+                android:layout_marginBottom="16dp"/>
 
         </LinearLayout>
 

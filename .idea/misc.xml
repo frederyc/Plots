@@ -13,16 +13,19 @@
         <entry key="..\:/Android Projects/Plots/app/src/main/res/drawable/signin_rounded_corners.xml" value="0.3495" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_account_edit_information.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_create_listing.xml" value="0.35945945945945945" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_filter_properties.xml" value="0.35945945945945945" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_listing_expanded.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_login.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_register.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_splash_screen.xml" value="0.25" />
-        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_view_my_listings.xml" value="0.2940038684719536" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/activity_view_my_listings.xml" value="0.33" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/feed_toolbar.xml" value="0.35945945945945945" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/filter_toolbar.xml" value="0.35945945945945945" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_account.xml" value="0.35945945945945945" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_create_listing_view_pager.xml" value="0.35945945945945945" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_favorites.xml" value="0.1" />
-        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_feed.xml" value="0.1" />
+        <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_feed.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_price_and_size.xml" value="0.3585284280936455" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_property_description.xml" value="0.33" />
         <entry key="..\:/Android Projects/Plots/app/src/main/res/layout/fragment_property_details.xml" value="0.3585284280936455" />

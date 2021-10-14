@@ -10,7 +10,6 @@ import com.example.plots.databinding.ActivityMainBinding
 import com.example.plots.ui.fragments.account.AccountFragment
 import com.example.plots.ui.fragments.favorites.FavoritesFragment
 import com.example.plots.ui.fragments.feed.FeedFragment
-import com.example.plots.ui.fragments.settings.SettingsFragment
 import com.example.plots.ui.login.LoginActivity
 import com.google.firebase.auth.FirebaseAuth
 import java.util.*
@@ -26,9 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var feedFragment: FeedFragment
-    private lateinit var favoritesFragment: FavoritesFragment
     private lateinit var accountFragment: AccountFragment
-    private lateinit var settingsFragment: SettingsFragment
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,9 +45,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "User: ${auth.currentUser?.email}")
 
         feedFragment = FeedFragment()
-        favoritesFragment = FavoritesFragment()
         accountFragment = AccountFragment()
-        settingsFragment = SettingsFragment()
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, feedFragment).commit()
@@ -66,9 +61,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "setOnItemSelectedListener: called")
             val selectedFragment: Fragment? = when (it.itemId) {
                 R.id.nav_feed -> feedFragment
-                R.id.nav_favorites -> favoritesFragment
                 R.id.nav_account -> accountFragment
-                R.id.nav_settings -> settingsFragment
                 else -> null
             }
 

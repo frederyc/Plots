@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.activities.filterProperties.FilterProperties">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/filter_toolbar"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:fontFamily="@font/rozanova_hum_demo_semibold"
+            android:textColor="#b4b4b4"
+            android:text="Property Type"/>
+
+        <RadioButton
+            android:id="@+id/anyPropertyTypeRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/sentic_text_bold"
+            android:textColor="#646464"
+            android:text="Any" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="1"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/houseRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:fontFamily="@font/sentic_text_bold"
+                android:textColor="#646464"
+                android:text="House" />
+
+            <RadioButton
+                android:id="@+id/townHouseRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:fontFamily="@font/sentic_text_bold"
+                android:textColor="#646464"
+                android:text="Town House" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/condoRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:fontFamily="@font/sentic_text_bold"
+                android:textColor="#646464"
+                android:text="Condo" />
+
+            <RadioButton
+                android:id="@+id/landRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:fontFamily="@font/sentic_text_bold"
+                android:textColor="#646464"
+                android:text="Land" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/rozanova_hum_demo_semibold"
+            android:textColor="#b4b4b4"
+            android:text="Listing Type"/>
+
+        <RadioButton
+            android:id="@+id/anyListingTypeRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:gravity="center_vertical"
+            android:fontFamily="@font/sentic_text_bold"
+            android:textColor="#646464"
+            android:text="Any" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="1"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/forSaleRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:fontFamily="@font/sentic_text_bold"
+                android:textColor="#646464"
+                android:text="For Sale" />
+
+            <RadioButton
+                android:id="@+id/forRentRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:fontFamily="@font/sentic_text_bold"
+                android:textColor="#646464"
+                android:text="For Rent" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/filter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="filter"
+            android:layout_marginVertical="8dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

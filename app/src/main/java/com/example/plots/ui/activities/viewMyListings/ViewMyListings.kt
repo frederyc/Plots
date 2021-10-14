@@ -24,6 +24,11 @@ class ViewMyListings : AppCompatActivity() {
         binding = ActivityViewMyListingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        initUI()
+    }
+
+    override fun onResume() {
+        super.onResume()
         val factory = AuthenticationInjector.provideViewMyListingsViewModelFactory()
         val viewModel: ViewMyListingsViewModel by viewModels { factory }
 
@@ -31,9 +36,6 @@ class ViewMyListings : AppCompatActivity() {
         loadingScreen.start()
 
         viewModel.getCurrentUserListingItems({
-            Log.d(TAG, "List size is: ${it.size}")
-            Log.d(TAG, "List is: $it")
-
             if(it.size != 0) {
                 binding.myListingsRecyclerView.visibility = View.VISIBLE
                 binding.nothingAdded.visibility = View.GONE
@@ -51,8 +53,6 @@ class ViewMyListings : AppCompatActivity() {
             loadingScreen.end()
             ErrorDialog(this, R.layout.uploading_error)
         })
-
-        initUI()
     }
 
     private fun initUI() {
