@@ -14,3 +14,8 @@ search for a property or list their own.
 - [Firebase](https://firebase.google.com/)
 - [Android Studio](https://developer.android.com/studio?gclid=CjwKCAjwzaSLBhBJEiwAJSRokg2K6M2tUvCGOKDNOqlgIgAbD9FI65RmKYMdCbT7oeOyhQrYpQAmEhoC23YQAvD_BwE&gclsrc=aw.ds)
 - [GitHub](https://github.com/)
+
+## Screenshots
+
+![login](https://user-images.githubusercontent.com/64581539/138963247-28880c62-2db0-4d17-8eb8-d6b8550b9b5b.jpg)
+![register](https://user-images.githubusercontent.com/64581539/138963262-34258385-a3b1-4378-ba7a-f2024af89c32.jpg)
