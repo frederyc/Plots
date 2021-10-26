@@ -17,5 +17,6 @@ search for a property or list their own.
 
 ## Screenshots
 
-![login](https://user-images.githubusercontent.com/64581539/138963247-28880c62-2db0-4d17-8eb8-d6b8550b9b5b.jpg)
-![register](https://user-images.githubusercontent.com/64581539/138963262-34258385-a3b1-4378-ba7a-f2024af89c32.jpg)
+![login](https://user-images.githubusercontent.com/64581539/138963588-8f99ca1b-930f-4370-b645-80f3afb970f3.jpg)
+![register](https://user-images.githubusercontent.com/64581539/138963594-8d6cfb90-5108-42e7-aff4-554f8cc86861.jpg)
+
