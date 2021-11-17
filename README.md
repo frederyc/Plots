@@ -15,6 +15,12 @@ search for a property or list their own.
 - [Android Studio](https://developer.android.com/studio?gclid=CjwKCAjwzaSLBhBJEiwAJSRokg2K6M2tUvCGOKDNOqlgIgAbD9FI65RmKYMdCbT7oeOyhQrYpQAmEhoC23YQAvD_BwE&gclsrc=aw.ds)
 - [GitHub](https://github.com/)
 
+## Design
+Plots was designed with MVVM architecture in mind. The design patterns used are:
+- [Singleton](https://refactoring.guru/design-patterns/singleton): Used to instantiate ViewModels
+- [Observer](https://refactoring.guru/design-patterns/observer): Used to expose data between components, using LiveData
+- [Mediator](https://refactoring.guru/design-patterns/mediator): Used by the repository, acting as a mediator between local storage and server
+
 ## Screenshots
 
 ![login](https://user-images.githubusercontent.com/64581539/138964932-857b3af1-5e8d-409d-95fa-7f3977d5b2e3.jpg)
